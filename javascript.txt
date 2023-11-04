@@ -1,0 +1,330 @@
+Javascript context blueprint on which area which context it refers
+value (where it refers)
+
+					Strict Mode                                value                             Non strict mode                              value 
+					Global context   ------>                      {}                             Global context   ------                       {}
+					Function context (Global level)  ------       undefined                      Function context (Global level)  ------       Global 
+Nodejs 				In Object method ---->  (current object on which the method was called)      In Object method ---->  (current object on which the method was called)
+					In Nested Function --->  undefined                                           In Nested Function --->  Global
+-----------------------------------------------------------------------------------------------------------------
+					Global context   ------>                      window                            Global context   ------                     window
+					Function context (Global level)  ------       undefined                      Function context (Global level)  ------>       window 
+Browser 			In Object method ---->  (current object on which the method was called)      In Object method ---->  (current object on which the method was called)
+					In Nested Function --->                     undefined                        In Nested Function                     --->  window
+
+
+
+
+
+
+//techniques to write clean javascript best 
+
+pure function
+Higer order function 
+first class function
+
+Javascript Run Time environment
+
+The Javascrit run time environmeent is root container
+Th below are all part of JRE
+1.JS Engine (Heart of JRE)(it's not machine. it's responsible of converting code into machine language)
+JS Engine steps to execute code (parsing -> compilation -> execution)
+2. Browser API
+3. Call Stack , callback Queue , javascript event loop
+
+JIT Complier (JUST IN TIME compiler)
+javascript has interpeter and compiler
+
+interpeter(fast) reads and exeutes line by line
+compiler (efficiency) it optimizies machine code
+
+javascript Execution has two important components
+Memory Heap and Call stack
+
+
+
+
+
+Throttling 
+
+The throttling is nothing but no matter how many times click it will fire for every specificed interval of time
+
+<button id='triggerThrottling'>Throttling </button>
+const btn = document.querySelector('#triggerThrottling');
+const throttle = (fun,delay)=>{
+let last = 0;
+return (...args) =>{
+let now = new Date().getTime();
+if(now - last > delay){
+	last = now;
+	return fun(...args);
+}
+}
+}
+btn.addEventListener('click',throttle(function(){console.log("No matter how many times you call after every specific interval of time it will make call")},1500))
+
+
+debounce
+
+The debounce will fire an event the movement we resume the click event and again start
+
+example
+<button id="triggerDebouncer"> </button>
+
+const btn = document.getElementById('triggerDebouncer');
+
+ const deBouncer = (fun,delay)=>{
+		let deBounceTimer = 0;
+		return function(...args){
+			clearTimeout(deBounceTimer);
+				deBounceTimer = setTimeout(()=> {
+						fun(...args)
+
+		},delay)
+			
+}
+
+}
+
+
+btn.addEventListener('click',deBouncer(function(){ console.log(`No matter how many times you click the debounce button \n, I get executed once every 3 seconds post you Resume clicking !!`)},2000))
+
+
+//javascript prototype
+let f = function () {
+   this.a = 1;
+   this.b = 2;
+}
+let o = new f(); // {a: 1, b: 2}
+
+// add properties in f function's prototype
+f.prototype.b = 3;
+f.prototype.c = 4;
+
+console.log(o.a)
+console.log(o.b)
+console.log(o.c)
+
+//Once create with new Keyword with function the below actions will come into place
+
+It creates a new object. The type of this object is simply object.
+It sets this new object's internal, inaccessible, [[prototype]] (i.e. __proto__) property to be the constructor function's external, accessible, prototype object (every function object automatically has a prototype property).
+It makes the this variable point to the newly created object.
+It executes the constructor function, using the newly created object whenever this is mentioned.
+It returns the newly created object, unless the constructor function returns a non-null object reference. In this case, that object reference is returned instead.
+
+
+
+
+localstorage limit
+
+function gen(n) {
+    return new Array((n * 1024) + 1).join('a')
+}
+ 
+// Determine size of localStorage if it's not set
+if (!localStorage.getItem('size')) {
+    var i = 0;
+    try {
+        // Test up to 10 MB
+        for (i = 0; i <= 10000; i += 250) {
+            localStorage.setItem('test', gen(i));
+        }
+    } catch (e) {
+        localStorage.removeItem('test');
+        localStorage.setItem('size', i ? i - 250 : 0);
+        
+    }
+}
+
+
+var el = document.getElementById('size');        
+el.innerHTML = localStorage.getItem('size');
+
+ Call apply, bind
+
+bind
+const objData= {
+x:43,
+getNumber:function(){
+	return this.x
+}
+
+
+}
+//polyfill of bind
+
+// oe example
+let obj = {
+name:'Jack'
+}
+let myFunc = function(param,city){
+console.log(`${this.name}, ${param} ${city}`);
+}
+
+Function.prototype.myBind = function(objtemp, ...args){
+let context = this;
+return function(...newArg){
+		context.apply(objtemp,[...args,...newArg])
+}
+
+}
+let obj1 = myFunc.myBind(obj,'John')
+obj1('Newyork');
+//another approach
+let obj = { company: "epsilon", location: "Bangalore" }
+
+let printEmployee = function(name,age){
+	console.log(`The ${age} year old employee ${name} is residing in ${this.location} and working with ${this.company}`)
+}
+
+Function.prototype.myBind = function(...args){
+let context = this;
+let params = args.slice(1);
+return function(...innerargs){
+		context.apply(args[0],[...params,...innerargs])
+}
+}
+let printData = printEmployee.myBind(obj,"Kumara Swamy");
+printData(32);
+
+//regular bind
+
+let obj = {
+firstName: "kumar"
+}
+
+let getData = function(age){
+
+console.log(`The age of ${this.firstName} is ${age}`)
+	
+}
+
+let bindData = getData.bind(obj,32);
+console.log(bindData())
+
+
+call apply
+const pokeman = {
+firstName:"Kumar",
+lastName:"GM",
+getPokeDetails:function(){
+   var fullname = this.firstName + ' ' + this.lastName;
+        return fullname;
+}
+
+}
+const pokemanData = function(age,gender){
+	console.log(this.getPokeDetails(),age,gender)
+}
+
+pokemanData.call(pokeman,12,'Male')
+pokemanData.apply(pokeman,[12,'Male'])
+
+
+//Object.create and new differnece
+Honda = new Car(); — When you create an object like this then hidden {prototype} property is pointed to Car.prototype. So here, the {prototype} of the Honda object will always be Car.prototype — we don't have any option to change the {prototype} property of the object. What if I want to change the prototype of our newly created object?
+Maruti = Object.create(Car.prototype) — When you create an object like this you have an extra option to choose your object's {prototype} property. If you want Car.prototype as the {prototype} then pass it as a parameter in the function. If you don't want any {prototype} for your object then you can pass null like this: Maruti = Object.create(null).
+
+Conclusion — By using the method Object.create you have the freedom to choose your object {prototype} property. In new Car();, you don't have that freedom.
+
+
+//prototype Chaining
+
+const Home = function(){};
+
+Home.prototype.printHomeName = function(){
+	return 'This is first Home'
+}
+
+const PurchasedHome = function(){}
+
+PurchasedHome.prototype = Object.create(Home.prototype)
+PurchasedHome.prototype.printHomeName = function(){
+	return 'This is my puchased Home'
+}
+const RentedWorkHome = function(){}
+
+RentedWorkHome.prototype = Object.create(PurchasedHome.prototype);
+
+RentedWorkHome.prototype.printHomeName = function(){
+	return 'This is rented Home';
+}
+const nativeHome = new Home();
+const purchasedHome = new PurchasedHome();
+const workingrentedeHome = new RentedWorkHome();
+console.log(nativeHome.printHomeName())
+console.log(purchasedHome.printHomeName())
+console.log(workingrentedeHome.printHomeName())
+
+The prototype chaining is when the referenced object has prototype of referenced one and as well it's own when we dig into prototype it will reach end of prototype null that is only prototype chaining
+
+simple promise example
+const getCalculatedData=(a,b)=>{
+let promiseCalculation = new Promise((resolve,reject)=>{
+
+result =  a + b;
+resolve(result);
+
+})
+promiseCalculation.then((data)=>{
+		console.log(data);
+	},(err)=>{
+	console.log(err);
+})
+}
+getCalculatedData(4,5);
+
+javascript callback
+// function
+function greet(name, callback) {
+    console.log('Hi' + ' ' + name);
+    callback();
+}
+
+// callback function
+function callMe() {
+    console.log('I am callback function');
+}
+
+// passing function as an argument
+greet('Peter', callMe);
+
+//find sum 
+
+function findSum(num,sum){
+	let result = 0;
+while(num > 0){
+				
+		let number  = num % 10 ;
+			num = Math.floor(num / 10);
+			result = result + number; 
+      if(result === sum){
+          return result;
+      }
+}
+return result === sum ? result : false;
+}
+console.log(findSum(525,12))
+
+const promises = [Promise.resolve("hello"),Promise.resolve("world"),Promise.resolve("Kum"),Promise.reject("Kum")];
+//promise all rejects as soon as if any promise rejected
+Promise.all(promises).then((results)=>{console.log(results);})
+// promise.allSettled won't rejects either reject/resolve. It will wait for untill finsihing of all promises
+Promise.allSettled(promises).then((results)=>{console.log(results);})
+//Promise.any resolved if any promise fulfill
+Promise.any(promises).then((results)=>{console.log(results);})
+
+//The Promise.race() method returns a promise that fulfills or rejects as soon as one of the promises in an iterable fulfills or rejects, with the value or reason from that promise.
+1. Closure,
+2. Higher Order function
+3. ES6
+4. This concept
+5. Call apply, bind
+6. Ajax
+7. Media queries 
+8. Any framework in javascript (react or angular)
+9. General interview questions
+10. If assignment is given make sure it is responsive
+11. Maintainable code, reusable code, function names
+12. Instead of writing everything in one file, divide into modules.??1. Programming puzzles?2. Polindrome, fubonacci,
